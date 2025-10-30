@@ -1,0 +1,14 @@
+# Bibliotecas para Web Scraping e Controle de Navegador
+selenium
+beautifulsoup4
+requests  # Usado para requisições HTTP básicas, se Scrapy não for usado
+
+# Framework (Opcional, mas recomendado para projetos de escala)
+# scrapy # Descomente se for usar o framework completo
+
+# Bibliotecas para Análise e Estrutura de Dados
+pandas
+
+# Bibliotecas para Interação com PostgreSQL
+psycopg2-binary  # Driver simples para PostgreSQL
+# sqlalchemy     # Descomente se for usar um ORM para gerenciamento de banco de dados
