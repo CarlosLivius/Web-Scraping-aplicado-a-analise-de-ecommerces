@@ -1,6 +1,7 @@
 # Bibliotecas para Web Scraping e Controle de Navegador
 selenium
 beautifulsoup4
+webdriver_manager
 requests  # Usado para requisições HTTP básicas, se Scrapy não for usado
 
 # Framework (Opcional, mas recomendado para projetos de escala)
