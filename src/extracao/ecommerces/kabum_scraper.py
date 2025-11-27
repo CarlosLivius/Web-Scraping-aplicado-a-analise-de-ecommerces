@@ -20,6 +20,8 @@ XPATH_CONTAINER_LISTAGEM = '//*[@id="listing"]/div[3]/div/div/div[2]/div/main'
 # XPATH RELATIVO para cada card de produto dentro do container
 XPATH_CARD_PRODUTO_RELATIVO = './div' # Alterado para div[] para pegar todos os filhos diretos do container
 
+
+# PARTE 1 - FUNÇÃO EXTRAÇÃO KABUM
 def extrair_kabum(driver):
     """
     Realiza a navegação e extração de dados da Kabum usando XPATH.
@@ -51,6 +53,7 @@ def extrair_kabum(driver):
         
         print(f"   [Kabum] Encontrados {len(cards_produtos_elements)} cards de produto.")
 
+        # PARTE 2 - FUNÇÃO EXTRAÇÃO KABUM
         for card_element in cards_produtos_elements:
 
             # Parte relativa ao título

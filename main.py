@@ -23,7 +23,7 @@ def configurar_servico_driver():
     # ----------------------------------------------------------------------
     # ARGUMENTOS ESSENCIAIS DE ESTABILIDADE E ANTI-BLOQUEIO
     # ----------------------------------------------------------------------
-    opcoes.add_argument('--headless')
+    # opcoes.add_argument('--headless')
     opcoes.add_argument('--no-sandbox')
     opcoes.add_argument('--disable-dev-shm-usage')
     opcoes.add_argument('--disable-gpu')
@@ -42,8 +42,9 @@ def configurar_servico_driver():
         service = ChromeService(ChromeDriverManager().install())
         driver = webdriver.Chrome(service=service, options=opcoes)
         
-        # Define um timeout de carregamento de página (máximo 30 segundos)
-        driver.set_page_load_timeout(30)
+        # AÇÃO CRÍTICA: Removida a linha driver.set_page_load_timeout(30)
+        # O timeout agora é o default (geralmente 300s ou infinito).
+        # O controle de tempo será feito pelo time.sleep e window.stop() no scraper.
         
         return driver
     except Exception as e:

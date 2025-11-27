@@ -1,6 +1,6 @@
 import pandas as pd 
 from .ecommerces.kabum_scraper import extrair_kabum
-# from .ecommerces.magalu_scraper import extrair_magalu
+from .ecommerces.magalu_scraper import extrair_magalu
 # from .ecommerces.casasbahia_scraper import extrair_casasbahia
 
 def extrair_dados(driver):
@@ -20,10 +20,10 @@ def extrair_dados(driver):
     print(f"      [OK] Kabum: {len(dados_kabum)} registros coletados.")
 
     # # Extrai dados da Magalu
-    # print("     -> Extraindo dados do Magalu...")
-    # dados_magalu = extrair_magalu(driver)
-    # todos_os_dados.extend(dados_magalu)
-    # print(f"      [OK] Magalu: {len(dados_magalu)} registros coletados.")
+    print("     -> Extraindo dados do Magalu...")
+    dados_magalu = extrair_magalu(driver)
+    todos_os_dados.extend(dados_magalu)
+    print(f"      [OK] Magalu: {len(dados_magalu)} registros coletados.")
 
     # # Extrai dados da Casas Bahia
     # print("     -> Extraindo dados da Casas Bahia...")
