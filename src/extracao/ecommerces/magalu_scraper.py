@@ -8,7 +8,7 @@ import time
 import re
 
 # URL DE CATEGORIA: Usando a URL de categoria solicitada (Lembre-se: ela é mais instável!)
-URL_PAGINADA = "https://www.magazineluiza.com.br/celulares-e-smartphones/l/te/?page={}&sortOrientation=desc&sortType=score"
+URL_PAGINADA = "https://www.magazineluiza.com.br/busca/smartphone/?page={}"
 
 # --- XPATH FLEXÍVEL (COLETA DO CONTÊINER) ---
 # XPATH que busca TODOS os elementos LI que são filhos do UL[data-testid="list"]
