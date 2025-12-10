@@ -13,23 +13,23 @@ def extrair_dados(driver):
 
     print("\n[MÓDULO DE EXTRAÇÃO] Iniciando a coleta de dados nos e-commerces...\n")
 
-    # # Extrai dados do Kabum
-    # print("     -> Extraindo dados do Kabum...")
-    # dados_kabum = extrair_kabum(driver)
-    # todos_os_dados.extend(dados_kabum)
-    # print(f"      [OK] Kabum: {len(dados_kabum)} registros coletados.")
+    # Extrai dados do Kabum
+    print("     -> Extraindo dados do Kabum...")
+    dados_kabum = extrair_kabum(driver)
+    todos_os_dados.extend(dados_kabum)
+    print(f"      [OK] Kabum: {len(dados_kabum)} registros coletados.")
 
-    # # # Extrai dados da Magalu
-    # print("     -> Extraindo dados do Magalu...")
-    # dados_magalu = extrair_magalu(driver)
-    # todos_os_dados.extend(dados_magalu)
-    # print(f"      [OK] Magalu: {len(dados_magalu)} registros coletados.")
+    # Extrai dados da Magalu
+    print("     -> Extraindo dados do Magalu...")
+    dados_magalu = extrair_magalu(driver)
+    todos_os_dados.extend(dados_magalu)
+    print(f"      [OK] Magalu: {len(dados_magalu)} registros coletados.")
 
     # Extrai dados da Casas Bahia
-    print("     -> Extraindo dados da Casas Bahia...")
-    dados_casasbahia = extrair_casasbahia(driver)
-    todos_os_dados.extend(dados_casasbahia)
-    print(f"      [OK] Casas Bahia: {len(dados_casasbahia)} registros coletados.")
+    # print("     -> Extraindo dados da Casas Bahia...")
+    # dados_casasbahia = extrair_casasbahia(driver)
+    # todos_os_dados.extend(dados_casasbahia)
+    # print(f"      [OK] Casas Bahia: {len(dados_casasbahia)} registros coletados.")
 
     # Chamada para consolidação e Análise
     if todos_os_dados:

@@ -4,34 +4,28 @@ from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException, WebDriverException, NoSuchElementException
 import time
 import re
+from bs4 import BeautifulSoup # Importando BeautifulSoup para processar o HTML bruto
 
 # URL DE BUSCA PAGINADA: A URL aceita o número da página no formato ?page=X
 URL_PAGINADA = "https://www.casasbahia.com.br/smartphone/b?page={}"
 
-# --- XPATHS DE COLETA ---
-# XPATH GERAL PARA DETECTAR O CARD DE PRODUTO (o elemento que contém todos os dados)
-# Usando data-testid para estabilidade (div[@data-testid="product-card-item"])
-XPATH_CARD_GERAL = '//div[@data-testid="product-card-item"]'
-
-# --- XPATHS RELATIVOS AOS ATRIBUTOS (DENTRO DA TAG DIV DO CARD) ---
-# TÍTULO: O título está no atributo 'title' do link dentro do h3
-XPATH_TITULO_RELATIVO = './/h3[@class="product-card__title"]/a'
-# PREÇO: XPATH que busca o preço mais visível (geralmente o preço Pix ou à vista)
-XPATH_PRECO_AVISTA_RELATIVO = './/div[@class="product-card__highlight-price"]'
-# AVALIAÇÕES: XPATH que busca o span com o número de avaliações (X)
-XPATH_AVALIACAO_RELATIVO = './/span[@data-testid="product-card-reviews-count"]'
+# --- XPATHS DE COLETA FLEXÍVEL DE ÚLTIMO RECURSO ---
+# XPATH GERAL PARA DETECTAR O CARD DE PRODUTO
+XPATH_CARD_GERAL = '//div[@data-testid="product-card-item"]' 
 
 
 def extrair_casasbahia(driver):
     """
-    Realiza a navegação e extração de 100 produtos da Casas Bahia (50 por página).
+    Realiza a navegação e extração de 100 produtos da Casas Bahia.
+    Ajustado para coletar 25 itens por página em 4 páginas.
+    Usa FORÇA BRUTA (interrupção e pausa curta) para mitigar o bloqueio de carregamento.
     """
     dados_casasbahia = []
     
     pagina_atual = 1
     LIMITE_ITENS_GLOBAL = 100
-    LIMITE_ITENS_POR_PAGINA = 25
-    MAX_PAGINAS = 4
+    LIMITE_ITENS_POR_PAGINA = 25 
+    MAX_PAGINAS = 4 
 
     while len(dados_casasbahia) < LIMITE_ITENS_GLOBAL and pagina_atual <= MAX_PAGINAS:
         url_atual = URL_PAGINADA.format(pagina_atual)
@@ -46,7 +40,7 @@ def extrair_casasbahia(driver):
             page_load_success_on_get = True 
             
         except TimeoutException:
-            # Captura o Timeout de navegação (30s) e força a coleta
+            # Captura o Timeout de navegação (30s) e tenta a coleta
             print(f"   [Casas Bahia] ALERTA: Timeout de navegação (30s). Tentando coleta com DOM parcial.")
             page_load_success_on_get = True 
         except Exception:
@@ -56,21 +50,34 @@ def extrair_casasbahia(driver):
         if page_load_success_on_get:
             
             try:
-                # --- TÉCNICA DE PAUSA FIXA (COLETA FORÇADA) ---
-                sleep_time = 15 # 15s fixos para estabilização (Casas Bahia é notoriamente pesada)
-                print(f"   [Casas Bahia] Aguardando {sleep_time} segundos para estabilização do DOM (Coleta Forçada)...")
+                # --- ESTRATÉGIA DE FORÇA BRUTA: SCROLL + PAUSA CURTA + INTERRUPÇÃO ---
+                sleep_time = 10 
+                print(f"   [Casas Bahia] Forçando DOM: Scroll, Pausa {sleep_time}s e Interrupção...")
                 
-                # Rola a página e pausa para carregar todos os lazy-load assets
+                # Scroll para forçar o lazy-load
                 driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
                 time.sleep(sleep_time) 
                 
-                # 1. COLETAR TODOS OS CARDS DE PRODUTO EM LOTE (FORÇADA)
-                cards_produtos_elements = driver.find_elements(By.XPATH, XPATH_CARD_GERAL)
+                # AÇÃO CRÍTICA: Interrompe o carregamento de scripts secundários que causam o timeout
+                driver.execute_script("window.stop();")
+                print("   [Casas Bahia] Carregamento da página INTERROMPIDO para evitar travamento.")
                 
-                print(f"   [Casas Bahia] Total de cards encontrados: {len(cards_produtos_elements)}.")
+                # COLETAR O HTML BRUTO APÓS A RENDERIZAÇÃO FORÇADA
+                html_content = driver.page_source
+                soup = BeautifulSoup(html_content, 'html.parser')
+                
+                # Encontrar os cards usando o seletor CSS do BeautifulSoup (data-testid)
+                cards_produtos = soup.find_all('div', attrs={'data-testid': 'product-card-item'})
+                
+                # Tenta fallback se o data-testid falhar (Busca pela classe wrapper)
+                if not cards_produtos:
+                     cards_produtos = soup.find_all('div', class_=re.compile(r'ProductCardWrapper'))
+
+
+                print(f"   [Casas Bahia] Total de cards encontrados no HTML bruto: {len(cards_produtos)}.")
 
                 # 2. ITERAR E EXTRAIR
-                for card_element in cards_produtos_elements:
+                for card in cards_produtos:
                     
                     if itens_coletados_nesta_pagina >= LIMITE_ITENS_POR_PAGINA:
                         break
@@ -79,44 +86,32 @@ def extrair_casasbahia(driver):
                     
                     # --- Inicializa variáveis de coleta ---
                     titulo, preco_texto, preco_numerico, nota_media, num_comentarios = "N/A", "N/A", "N/A", "N/A", "N/A"
-                    preco_original_texto = "N/A"
                     
                     try:
-                        
                         # 1. Título
-                        try:
-                            # O título está no atributo 'title' do elemento <a>
-                            titulo_tag = card_element.find_element(By.XPATH, XPATH_TITULO_RELATIVO)
-                            titulo = titulo_tag.get_attribute('title').strip()
-                        except: pass
+                        titulo_tag = card.find('h3', class_='product-card__title')
+                        if titulo_tag and titulo_tag.a:
+                            titulo = titulo_tag.a.get('title', 'N/A').strip()
                         
-                        # 2. Preço à Vista (Preço Principal)
-                        try:
-                            preco_tag = card_element.find_element(By.XPATH, XPATH_PRECO_AVISTA_RELATIVO)
+                        # 2. Preço à Vista
+                        preco_tag = card.find('div', class_='product-card__highlight-price')
+                        if preco_tag:
                             preco_texto_raw = preco_tag.text.strip()
-                            
-                            # Limpa o preço (apenas dígitos e vírgulas)
-                            match_preco = re.search(r'R\$\s*([\d\.]+,\d{2})', preco_texto_raw)
+                            match_preco = re.search(r'([\d\.]+,\d{2})', preco_texto_raw)
                             if match_preco:
                                 preco_texto = match_preco.group(1)
                                 preco_limpo = preco_texto.replace('.', '').replace(',', '.').strip()
                                 try: preco_numerico = float(preco_limpo)
                                 except: preco_numerico = preco_texto
-                            else:
-                                preco_texto = preco_texto_raw
-                        except: pass
-
-                        # 3. Avaliações (Número de Comentários)
-                        try:
-                            num_comentarios_tag = card_element.find_element(By.XPATH, XPATH_AVALIACAO_RELATIVO)
+                        
+                        # 3. Avaliações
+                        num_comentarios_tag = card.find('span', attrs={'data-testid': 'product-card-reviews-count'})
+                        if num_comentarios_tag:
                             num_comentarios_texto = num_comentarios_tag.text.strip()
                             num_match = re.search(r'\((\d+)\)', num_comentarios_texto)
                             if num_match:
                                 num_comentarios = int(num_match.group(1))
-                            # Nota Média: A Casas Bahia não expõe a nota média de forma simples no card, deixando N/A.
                             nota_media = "N/A"
-                            
-                        except: pass
                         
                         
                         # --- CONSOLIDAÇÃO ---
@@ -127,7 +122,7 @@ def extrair_casasbahia(driver):
                                 'e_commerce': 'Casas Bahia',
                                 'produto': titulo,
                                 'preco_bruto_vista': preco_texto,
-                                'preco_original': "N/A", # Não coletado com essa extração
+                                'preco_original': "N/A", 
                                 'preco_numerico': preco_numerico,
                                 'nota_media': nota_media,
                                 'num_comentarios': num_comentarios
@@ -137,12 +132,9 @@ def extrair_casasbahia(driver):
                         
                     except Exception:
                         pass
-            
-                page_load_success_on_get = True 
-
+                
             except Exception as e:
-                # Captura todos os erros que podem ocorrer
-                print(f"   [Casas Bahia] ERRO CRÍTICO NA COLETA: {e.__class__.__name__}. Não foi possível coletar dados.")
+                 print(f"   [Casas Bahia] ERRO CRÍTICO NA COLETA: {e.__class__.__name__}. Não foi possível coletar dados.")
 
         
         # --- LÓGICA DE PAGINAÇÃO E CONTROLE ---

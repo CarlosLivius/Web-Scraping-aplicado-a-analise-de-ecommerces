@@ -17,7 +17,7 @@ def configurar_servico_driver():
     # ----------------------------------------------------------------------
     # ARGUMENTOS ESSENCIAIS DE ESTABILIDADE E ANTI-BLOQUEIO
     # ----------------------------------------------------------------------
-    opcoes.add_argument('--headless') 
+    # opcoes.add_argument('--headless') 
     opcoes.add_argument('--no-sandbox')
     opcoes.add_argument('--disable-dev-shm-usage')
     opcoes.add_argument('--disable-gpu')
