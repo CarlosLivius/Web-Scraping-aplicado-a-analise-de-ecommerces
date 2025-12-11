@@ -1,7 +1,8 @@
 import pandas as pd 
 from .ecommerces.kabum_scraper import extrair_kabum
 from .ecommerces.magalu_scraper import extrair_magalu
-from .ecommerces.casasbahia_scraper import extrair_casasbahia
+# from .ecommerces.casasbahia_scraper import extrair_casasbahia
+from .ecommerces.americanas_scraper import extrair_americanas
 
 def extrair_dados(driver):
     """
@@ -30,6 +31,14 @@ def extrair_dados(driver):
     # dados_casasbahia = extrair_casasbahia(driver)
     # todos_os_dados.extend(dados_casasbahia)
     # print(f"      [OK] Casas Bahia: {len(dados_casasbahia)} registros coletados.")
+
+
+    # Extrai dados da Americanas
+    print("     -> Extraindo dados da Americanas...")
+    dados_americanas = extrair_americanas(driver)
+    todos_os_dados.extend(dados_americanas)
+    print(f"      [OK] Americanas: {len(dados_americanas)} registros coletados.")
+
 
     # Chamada para consolidação e Análise
     if todos_os_dados:
